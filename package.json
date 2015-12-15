@@ -1,0 +1,15 @@
+{
+  "name": "recordo",
+  "version": "0.0.0",
+  "description": "record browser events for QA to help make tickets/issues",
+  "main": "recordo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Philip Schatz",
+  "license": "MIT",
+  "dependencies": {
+    "clipboard": "^1.5.5",
+    "good-listener": "^1.1.4"
+  }
+}

@@ -1,0 +1,9 @@
+.-recordo.-recordo-controls {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 10000;
+}
+.-recordo.-recordo-controls:not(:hover) > :not(.-recordo-count) { display: none; }
+.-recordo.-recordo-controls > .-recordo-count::before { content: '[['; }
+.-recordo.-recordo-controls > .-recordo-count::after  { content: ']]'; }
