@@ -44,6 +44,13 @@ log = (type, args...) ->
   _internalLog(type, args...)
 
 
+# Safari in private mode does not allow saving to localStorage or sessionStorage
+setStorage = (key, value) ->
+  try
+    window.localStorage[key] = value
+  catch e
+
+
 # Wrap the XMLHttpRequest so we can report timeouts, errors, or success
 class WrappedXMLHttpRequest
   constructor: ->
@@ -247,10 +254,11 @@ start = (config = {}) ->
   window.addEventListener 'beforeunload', ->
     return unless isStarted
     log('HISTORY', 'UNLOAD')
-    window.localStorage['__REPLAY_LOG'] = JSON.stringify(REPLAY_LOG)
+    setStorage('__REPLAY_LOG', JSON.stringify(REPLAY_LOG))
 
   isStarted = true
-  window.localStorage['__REPLAY_AUTO_START'] = true
+  # Safari in private mode does not allow saving to localStorage or sessionStorage
+  setStorage('__REPLAY_AUTO_START', true)
 
 stop = ->
   clearLog()
