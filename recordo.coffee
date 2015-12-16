@@ -266,12 +266,13 @@ stop = ->
   isStarted = false
 
 
-# If the URL has the special `?debug=true` the start automatically
-if /collect=true/.test(window.location.search)
-  start()
-else if /collect=false/.test(window.location.search)
-  stop()
+initialize = ->
+  # If the URL has the special `?debug=true` the start automatically
+  if /collect=true/.test(window.location.search)
+    start()
+  else if /collect=false/.test(window.location.search)
+    stop()
 
-start() if window.localStorage['__REPLAY_AUTO_START']
+  start() if window.localStorage['__REPLAY_AUTO_START']
 
-module.exports = {start, stop, isStarted: -> isStarted}
+module.exports = {initialize, start, stop, isStarted: -> isStarted}
