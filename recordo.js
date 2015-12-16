@@ -296,7 +296,7 @@
   logClickHandler = function(evt) {
     var extra, selector, target;
     target = evt.target;
-    if (target.classList.contains('-replay')) {
+    if (target.classList.contains('-recordo')) {
       return;
     }
     selector = generateSelector(target);
@@ -339,46 +339,46 @@
     window.XMLHttpRequest = WrappedXMLHttpRequest;
     window.onerror = loggedOnError;
     window.onpopstate = loggedOnPopState;
-    clickListener = listen('*:not(.-replay)', 'click', logClickHandler);
-    controlsDiv = document.querySelector('.-replay-controls');
+    clickListener = listen('*:not(.-recordo)', 'click', logClickHandler);
+    controlsDiv = document.querySelector('.-recordo-controls');
     if (!controlsDiv) {
       controlsDiv = document.createElement('div');
-      controlsDiv.classList.add('-replay');
-      controlsDiv.classList.add('-replay-controls');
+      controlsDiv.classList.add('-recordo');
+      controlsDiv.classList.add('-recordo-controls');
       document.body.appendChild(controlsDiv);
     }
-    stopBtn = document.querySelector('.-replay-stop');
+    stopBtn = document.querySelector('.-recordo-stop');
     if (!stopBtn) {
       stopBtn = document.createElement('button');
-      stopBtn.classList.add('-replay');
-      stopBtn.classList.add('-replay-stop');
+      stopBtn.classList.add('-recordo');
+      stopBtn.classList.add('-recordo-stop');
       stopBtn.textContent = 'X';
       stopBtn.title = 'Stop ReplayLog Entirely. You will need to restart by adding ?collect=true to the URL';
       controlsDiv.appendChild(stopBtn);
     }
-    clearBtn = document.querySelector('.-replay-clear-log');
+    clearBtn = document.querySelector('.-recordo-clear-log');
     if (!clearBtn) {
       clearBtn = document.createElement('button');
-      clearBtn.classList.add('-replay');
-      clearBtn.classList.add('-replay-clear-log');
+      clearBtn.classList.add('-recordo');
+      clearBtn.classList.add('-recordo-clear-log');
       clearBtn.textContent = 'Clear';
       clearBtn.title = 'Clear the log. Useful when starting a new test';
       controlsDiv.appendChild(clearBtn);
     }
-    copyBtn = document.querySelector('.-replay-copy-to-clipboard');
+    copyBtn = document.querySelector('.-recordo-copy-to-clipboard');
     if (!copyBtn) {
       copyBtn = document.createElement('button');
-      copyBtn.classList.add('-replay');
-      copyBtn.classList.add('-replay-copy-to-clipboard');
+      copyBtn.classList.add('-recordo');
+      copyBtn.classList.add('-recordo-copy-to-clipboard');
       copyBtn.textContent = 'Copy';
       copyBtn.title = 'Copies the log to the clipboard.\nIn Safari you need to click this and then press Press ⌘-C to copy to the clipboard';
       controlsDiv.appendChild(copyBtn);
     }
-    replayCount = document.querySelector('.-replay-count');
+    replayCount = document.querySelector('.-recordo-count');
     if (!replayCount) {
       replayCount = document.createElement('span');
-      replayCount.classList.add('-replay');
-      replayCount.classList.add('-replay-count');
+      replayCount.classList.add('-recordo');
+      replayCount.classList.add('-recordo-count');
       replayCount.textContent = REPLAY_LOG.length;
       controlsDiv.appendChild(replayCount);
     }

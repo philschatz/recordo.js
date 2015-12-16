@@ -143,7 +143,7 @@ generateSelector = (target) ->
 logClickHandler = (evt) ->
   {target} = evt
 
-  return if target.classList.contains('-replay') # Do not log clicks on the replay buttons
+  return if target.classList.contains('-recordo') # Do not log clicks on the replay buttons
 
   selector = generateSelector(target)
   # React frequently injects spans that have nothing on them.
@@ -181,42 +181,42 @@ start = (config = {}) ->
   window.onerror = loggedOnError
   window.onpopstate = loggedOnPopState
 
-  clickListener = listen('*:not(.-replay)', 'click', logClickHandler)
+  clickListener = listen('*:not(.-recordo)', 'click', logClickHandler)
 
-  controlsDiv = document.querySelector('.-replay-controls')
+  controlsDiv = document.querySelector('.-recordo-controls')
   # Create a button if one does not already exist
   unless controlsDiv
     controlsDiv = document.createElement('div')
-    controlsDiv.classList.add('-replay')
-    controlsDiv.classList.add('-replay-controls')
+    controlsDiv.classList.add('-recordo')
+    controlsDiv.classList.add('-recordo-controls')
     document.body.appendChild(controlsDiv)
 
-  stopBtn = document.querySelector('.-replay-stop')
+  stopBtn = document.querySelector('.-recordo-stop')
   # Create a button if one does not already exist
   unless stopBtn
     stopBtn = document.createElement('button')
-    stopBtn.classList.add('-replay')
-    stopBtn.classList.add('-replay-stop')
+    stopBtn.classList.add('-recordo')
+    stopBtn.classList.add('-recordo-stop')
     stopBtn.textContent = 'X'
     stopBtn.title = 'Stop ReplayLog Entirely. You will need to restart by adding ?collect=true to the URL'
     controlsDiv.appendChild(stopBtn)
 
-  clearBtn = document.querySelector('.-replay-clear-log')
+  clearBtn = document.querySelector('.-recordo-clear-log')
   # Create a button if one does not already exist
   unless clearBtn
     clearBtn = document.createElement('button')
-    clearBtn.classList.add('-replay')
-    clearBtn.classList.add('-replay-clear-log')
+    clearBtn.classList.add('-recordo')
+    clearBtn.classList.add('-recordo-clear-log')
     clearBtn.textContent = 'Clear'
     clearBtn.title = 'Clear the log. Useful when starting a new test'
     controlsDiv.appendChild(clearBtn)
 
-  copyBtn = document.querySelector('.-replay-copy-to-clipboard')
+  copyBtn = document.querySelector('.-recordo-copy-to-clipboard')
   # Create a button if one does not already exist
   unless copyBtn
     copyBtn = document.createElement('button')
-    copyBtn.classList.add('-replay')
-    copyBtn.classList.add('-replay-copy-to-clipboard')
+    copyBtn.classList.add('-recordo')
+    copyBtn.classList.add('-recordo-copy-to-clipboard')
     copyBtn.textContent = 'Copy'
     copyBtn.title = '''
       Copies the log to the clipboard.
@@ -224,11 +224,11 @@ start = (config = {}) ->
     '''
     controlsDiv.appendChild(copyBtn)
 
-  replayCount = document.querySelector('.-replay-count')
+  replayCount = document.querySelector('.-recordo-count')
   unless replayCount
     replayCount = document.createElement('span')
-    replayCount.classList.add('-replay')
-    replayCount.classList.add('-replay-count')
+    replayCount.classList.add('-recordo')
+    replayCount.classList.add('-recordo-count')
     replayCount.textContent = REPLAY_LOG.length
     controlsDiv.appendChild(replayCount)
 
