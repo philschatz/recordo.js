@@ -25,7 +25,7 @@ controlsDiv = null
 
 
 REPLAY_LOG = null
-PREVIOUS_PATH = window.location.pathname
+PREVIOUS_PATH = window.location.toString()
 log = (type, args...) ->
   _internalLog = (type, args...) ->
     replayCount?.textContent = REPLAY_LOG.length
@@ -40,7 +40,7 @@ log = (type, args...) ->
   path = window.location.pathname
   if path isnt PREVIOUS_PATH
     PREVIOUS_PATH = path
-    _internalLog('HISTORY', 'CHANGE', window.location.pathname)
+    _internalLog('HISTORY', 'CHANGE', window.location.toString())
   _internalLog(type, args...)
 
 
