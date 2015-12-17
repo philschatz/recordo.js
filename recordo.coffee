@@ -1,7 +1,6 @@
 # Add the following data into a log that can be included when filing a ticket
 # to help developers recreate an issue. This can be enabled/disabled programmatically
 # or just by adding `?debug=true` to the URL.
-# The log is stored as a global variable `__REPLAY_LOG`
 #
 # - [x] recent HTTP errors
 # - [x] all the JS exceptions that were thrown
@@ -10,8 +9,11 @@
 
 Clipboard = require 'clipboard'
 listen = require 'good-listener'
+debounce = require 'lodash/function/debounce'
+map = require 'lodash/collection/map'
+omit = require 'lodash/object/omit'
 
-MAX_LOG_SIZE = 100
+MAX_LOG_SIZE = 50
 
 OriginalXMLHttpRequest = window.XMLHttpRequest
 originalOnError = window.onerror
@@ -23,24 +25,25 @@ clickListener = null
 replayCount = null
 controlsDiv = null
 
-
-REPLAY_LOG = null
+LAST_EVENT_OF_TYPE = {} # Stores the last event of each type. Useful when the log is long
+THE_LOG = null
 PREVIOUS_PATH = window.location.toString()
-log = (type, args...) ->
-  _internalLog = (type, args...) ->
-    replayCount?.textContent = REPLAY_LOG.length
-    # console.log type, args...
-    REPLAY_LOG.push([type, args...])
-    # Discard the oldest entry
-    if REPLAY_LOG.length > MAX_LOG_SIZE
-      REPLAY_LOG.shift()
+_internalLog = (type, args...) ->
+  replayCount?.textContent = THE_LOG.length
+  # console.log type, args...
+  THE_LOG.push([type, args...])
+  LAST_EVENT_OF_TYPE[type] = args[...]
+  # Discard the oldest entry
+  if THE_LOG.length > MAX_LOG_SIZE
+    THE_LOG.shift()
 
+log = (type, args...) ->
   # History: Since there are no pushState events, we poll here to see if
   # there are any changes to the URL
   path = window.location.pathname
   if path isnt PREVIOUS_PATH
     PREVIOUS_PATH = path
-    _internalLog('HISTORY', 'CHANGE', window.location.toString())
+    _internalLog('HISTORY:URL', window.location.toString())
   _internalLog(type, args...)
 
 
@@ -92,12 +95,12 @@ class WrappedXMLHttpRequest
 
   _onload: (args...) ->
     responseText = @responseText if @responseType is '' or @responseType is 'text'
-    log('XHR', 'load', @_method, @_url, @status, responseText)
+    log('XHR:LOAD', @_method, @_url, @status, responseText)
     @_clientOnLoad?(args...)
 
   _onerror: (args...) ->
     responseText = @responseText if @responseType is '' or @responseType is 'text'
-    log('XHR', 'error', @_method, @_url, @status, responseText)
+    log('XHR:ERROR', @_method, @_url, @status, responseText)
     @_clientOnError?(args...)
 
   abort: (args...) -> @_xhr.abort(args...)
@@ -111,7 +114,7 @@ class WrappedXMLHttpRequest
   send: (args...) ->
     if typeof args[0] is 'string'
       @_data = args[0]
-    log('XHR', 'start', @_method, @_url, @_data)
+    log('XHR:START', @_method, @_url, @_data)
     @_xhr.send(args...)
   setRequestHeader: (args...) -> @_xhr.setRequestHeader(args...)
 
@@ -128,10 +131,16 @@ loggedOnPopState = (evt) ->
     # Make sure evt.state is serializable. Otherwise, don't use it
     JSON.stringify(evt.state)
 
-  log('HISTORY', 'POP', window.location.pathname, evt.state)
+  log('HISTORY:POP', window.location.pathname, evt.state)
   originalOnPopState?(evt)
 
 
+loggedOnResize = ->
+  # Throttle resizes because the events fire quicker than the user
+  {innerWidth, innerHeight} = window
+  log('WINDOW:SIZE', innerWidth, innerHeight)
+
+loggedOnResize = debounce(loggedOnResize, 1000)
 
 
 generateSelector = (target) ->
@@ -162,28 +171,48 @@ logClickHandler = (evt) ->
   extra = undefined
 
   switch target.tagName.toLowerCase()
-    when 'button' then extra = target.innerText
     when 'input' then extra = target.value
-    when 'a' then extra = target.href
+    else
+      extra = target.innerText
+
+  # For long strings of text, shorten them with `...` in the middle
+  if extra
+    len = extra.length
+    if len > 30
+      extra = "#{extra.substring(0,13)}...#{extra.substring(len-13,len)}"
 
   # Build up a unique selector
-  log('CLICK', selector, extra)
+  log('USER:CLICK', selector, extra)
 
 
-clearLog = ->
-  REPLAY_LOG.splice(0, REPLAY_LOG.length)
+clear = ->
+  THE_LOG.splice(0, THE_LOG.length)
 
+generateClipboard = ->
+  info =
+    browser:
+      os: navigator.oscpu or navigator.platform
+      userAgent: navigator.userAgent
+    window: [window.innerWidth, window.innerHeight]
+    log: THE_LOG
+
+  # If the log is long then send the last event of all the types
+  # TODO: store these in localStorage too
+  unless THE_LOG.length < MAX_LOG_SIZE
+    typesInTheLog = map THE_LOG, ([type]) -> type
+    info.lastEvents = omit(LAST_EVENT_OF_TYPE, typesInTheLog)
+
+  info
 
 start = (config = {}) ->
   return if isStarted
 
-  if window.localStorage['__REPLAY_LOG']
-    REPLAY_LOG = JSON.parse(window.localStorage['__REPLAY_LOG'])
+  # Load the THE_LOG from localStorage if available (this helps with pages going to a login page and then coming back)
+  if window.localStorage['__RECORDO_LOG']
+    THE_LOG = JSON.parse(window.localStorage['__RECORDO_LOG'])
   else
-    REPLAY_LOG = []
+    THE_LOG = []
 
-  # TODO: Load the REPLAY_LOG from localStorage if available (this helps with pages going to a login page and then coming back)
-  window.__REPLAY_LOG = REPLAY_LOG
   window.XMLHttpRequest = WrappedXMLHttpRequest
   window.onerror = loggedOnError
   window.onpopstate = loggedOnPopState
@@ -205,7 +234,7 @@ start = (config = {}) ->
     stopBtn.classList.add('-recordo')
     stopBtn.classList.add('-recordo-stop')
     stopBtn.textContent = 'X'
-    stopBtn.title = 'Stop ReplayLog Entirely. You will need to restart by adding ?collect=true to the URL'
+    stopBtn.title = 'Stop Recordo Entirely. You will need to restart by adding ?collect=true to the URL'
     controlsDiv.appendChild(stopBtn)
 
   clearBtn = document.querySelector('.-recordo-clear-log')
@@ -236,40 +265,46 @@ start = (config = {}) ->
     replayCount = document.createElement('span')
     replayCount.classList.add('-recordo')
     replayCount.classList.add('-recordo-count')
-    replayCount.textContent = REPLAY_LOG.length
+    replayCount.textContent = THE_LOG.length
     controlsDiv.appendChild(replayCount)
 
   # Add a button to copy to clipboard
   clipboard = new Clipboard copyBtn,
-    text: -> JSON.stringify(REPLAY_LOG)
+    text: -> JSON.stringify(generateClipboard())
 
   clearBtn.addEventListener 'click', ->
     # Clear the log without making a new array (because it's a global var)
-    clearLog()
-    delete window.localStorage['__REPLAY_LOG']
-    replayCount.textContent = REPLAY_LOG.length
+    clear()
+    delete window.localStorage['__RECORDO_LOG']
+    replayCount.textContent = THE_LOG.length
 
   stopBtn.addEventListener 'click', -> stop()
 
   window.addEventListener 'beforeunload', ->
     return unless isStarted
-    log('HISTORY', 'UNLOAD')
-    setStorage('__REPLAY_LOG', JSON.stringify(REPLAY_LOG))
+    log('HISTORY:UNLOAD')
+    setStorage('__RECORDO_LOG', JSON.stringify(THE_LOG))
+
+  window.addEventListener 'resize', ->
+    return unless isStarted
+    loggedOnResize()
+  loggedOnResize() # Store the initiala size
+
+  _internalLog('HISTORY:URL', window.location.toString())
 
   isStarted = true
   # Safari in private mode does not allow saving to localStorage or sessionStorage
-  setStorage('__REPLAY_AUTO_START', true)
+  setStorage('__RECORDO_AUTO_START', true)
 
 stop = ->
-  clearLog()
-  delete window.__REPLAY_LOG
+  clear()
   window.XMLHttpRequest = OriginalXMLHttpRequest
   window.onerror = originalOnError
   window.onpopstate = originalOnPopState
   clipboard.destroy()
   clickListener.destroy()
-  delete window.localStorage['__REPLAY_AUTO_START']
-  delete window.localStorage['__REPLAY_LOG']
+  delete window.localStorage['__RECORDO_AUTO_START']
+  delete window.localStorage['__RECORDO_LOG']
   controlsDiv.remove()
   isStarted = false
 
@@ -281,6 +316,14 @@ initialize = ->
   else if /collect=false/.test(window.location.search)
     stop()
 
-  start() if window.localStorage['__REPLAY_AUTO_START']
+  start() if window.localStorage['__RECORDO_AUTO_START']
 
-module.exports = {initialize, start, stop, isStarted: -> isStarted}
+module.exports = {
+  initialize
+  start
+  stop
+  clear
+  generateClipboard
+  getLog: -> THE_LOG
+  isStarted: -> isStarted
+}

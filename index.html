@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="./recordo.css"/>
+  </head>
+  <body>
+    <h1>Hi. I am a header</h1>
+    <h2 id='header123'>Hi. I am a header with an id</h2>
+    <h2 class='header-cls' data-toggle="true">Header with class and data attribute</h2>
+    <p>This is a test page for <a href="https://github.com/philschatz/recordo.js" target="_blank">Recordo</a>.</p>
+    <p>Notice the little <code>[[##]]</code> in the <strong>bottom-right</strong> corner of the screen.</p>
+    <p>That is the control panel. Click around on this page or resize/refresh the page and then click the "Copy" button</p>
+    <p>to copy the log to your clipboard and paste it into a text editor to see what was recorded</p>
+
+    <label for="username">Dummy Username Field:</label>
+    <input id="username" value="philschatz"/>
+    <br/>
+    <label for="description">Dummy Description Field:</label>
+    <textarea id="description">Some text</textarea>
+    <br/>
+    <button id="js-error">Click me to cause a javascript error</button>
+    <br/>
+    <button id="ajax-call">Click me to make an Ajax call</button>
+  </body>
+  <script src="./dist/recordo.js"></script>
+  <script>
+    __Recordo.initialize();
+    __Recordo.start(); // Force it to start up (no need to add ?collect=true in the URL)
+
+    document.getElementById('js-error').onclick = function() {
+      window.invalidFunction();
+    }
+
+    document.getElementById('ajax-call').onclick = function() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://api.github.com');
+      xhr.send();
+    }
+
+  </script>
+</html>

@@ -1,15 +1,23 @@
 {
   "name": "recordo",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "record browser events for QA to help make tickets/issues",
-  "main": "recordo.js",
+  "main": "dist/recordo.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "webpack-dev-server --hot --progress --colors --display-chunks --display-modules --display-origins",
+    "build": "webpack --optimize-minimize --progress --colors"
   },
   "author": "Philip Schatz",
   "license": "MIT",
   "dependencies": {
     "clipboard": "^1.5.5",
-    "good-listener": "^1.1.4"
+    "good-listener": "^1.1.4",
+    "lodash": "^3.10.1"
+  },
+  "devDependencies": {
+    "coffee-loader": "^0.7.2",
+    "coffee-script": "^1.10.0",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
   }
 }
