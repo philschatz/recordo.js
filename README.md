@@ -48,9 +48,7 @@ log: [
   ["UNCAUGHT", "data is undefined", "index.js", 1000, 10]  // <-- uncaught JS errors
   ["HISTORY:UNLOAD"]    //  <-- Either refresh was clicked or the user went to another page
   ["WINDOW:SIZE", 800, 600]  //  <-- user resized the window
-
-// TODO:
-  ["CONSOLE", "ERROR", "React: Caught Exception foo is undefined..."]
+  ["CONSOLE:LOG", "Some message", 4, [1, true]]
 ]
 ```
 
@@ -79,5 +77,5 @@ Since it's part of the webpage it will. You'll be creating bug reports on mobile
 
 # TODO:
 
-- [ ] Log _all_ `console` messages
+- [x] Log _all_ `console` messages
 - [x] Log window resizes
