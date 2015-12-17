@@ -19,6 +19,12 @@ OriginalXMLHttpRequest = window.XMLHttpRequest
 originalOnError = window.onerror
 originalOnPopState = window.onpopstate
 
+originalConsoleMethods =
+  error: console.error
+  info: console.info
+  log: console.log
+  warn: console.warn
+
 isStarted = false
 clipboard = null
 clickListener = null
@@ -141,6 +147,22 @@ loggedOnResize = ->
   log('WINDOW:SIZE', innerWidth, innerHeight)
 
 loggedOnResize = debounce(loggedOnResize, 1000)
+
+
+loggedConsole = (type) -> (args...) ->
+  serializableArgs = map args, (arg) ->
+    if arg instanceof Error
+      "Error(#{arg.message})"
+    else
+      # Try to serialize the arg. If it works, great!
+      try
+        JSON.stringify(arg)
+        arg
+      catch e
+        "UNSERIALIZABLE_#{'' + arg}"
+
+  originalConsoleMethods[type].bind(console)(args...)
+  log("CONSOLE:#{type.toUpperCase()}", serializableArgs)
 
 
 generateSelector = (target) ->
@@ -290,6 +312,12 @@ start = (config = {}) ->
     loggedOnResize()
   loggedOnResize() # Store the initiala size
 
+  # Wrap the console methods
+  console.error = loggedConsole('error')
+  console.info = loggedConsole('info')
+  console.log = loggedConsole('log')
+  console.warn = loggedConsole('warn')
+
   _internalLog('HISTORY:URL', window.location.toString())
 
   isStarted = true
@@ -303,6 +331,14 @@ stop = ->
   window.onpopstate = originalOnPopState
   clipboard.destroy()
   clickListener.destroy()
+
+  # Restore the original console methods
+  console.error = originalConsoleMethods.error
+  console.info = originalConsoleMethods.info
+  console.log = originalConsoleMethods.log
+  console.warn = originalConsoleMethods.warn
+
+
   delete window.localStorage['__RECORDO_AUTO_START']
   delete window.localStorage['__RECORDO_LOG']
   controlsDiv.remove()
