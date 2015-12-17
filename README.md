@@ -38,11 +38,11 @@ window: [800, 600],
 log: [
   ["USER:CLICK", "div.collapse.navbar-collapse"]
   ["XHR:START", "GET", "/api/tasks/226"]
-  ["XHR:LOAD",  "GET", "/api/tasks/226", 200, "{'id':...}"]   // <-- request query and POST body
+  ["XHR:LOAD",  "GET", "/api/tasks/226", 200, {"id":...}]   // <-- request query and POST body
   ["USER:CLICK", "button.async-button.continue[type='button']>span", "Continue"]
   ["HISTORY:URL", "/courses/3/tasks/226/steps/2/"]   // <-- user going to a different page
   ["XHR:START", "GET", "/api/steps/3653"]
-  ["XHR:LOAD", "GET", "/api/steps/3653", 200, "{'id':'3653',...}"] // <-- response JSON
+  ["XHR:LOAD", "GET", "/api/steps/3653", 200, "<p>some HTML</p>"] // <-- response HTML
   ["USER:CLICK", "div.answer-letter"]
   ["HISTORY:POP", "/courses/3/tasks/226/steps/1/"]   // <-- clicked browser back button
   ["UNCAUGHT", "data is undefined", "index.js", 1000, 10]  // <-- uncaught JS errors

@@ -101,6 +101,10 @@ class WrappedXMLHttpRequest
 
   _onload: (args...) ->
     responseText = @responseText if @responseType is '' or @responseType is 'text'
+    # Try to parse the responseText as JSON
+    # if it fails, just use the text
+    try
+      responseText = JSON.parse(responseText)
     log('XHR:LOAD', @_method, @_url, @status, responseText)
     @_clientOnLoad?(args...)
 
@@ -292,7 +296,7 @@ start = (config = {}) ->
 
   # Add a button to copy to clipboard
   clipboard = new Clipboard copyBtn,
-    text: -> JSON.stringify(generateClipboard())
+    text: -> '```json\n' + JSON.stringify(generateClipboard(), null, 2) + '\n```'
 
   clearBtn.addEventListener 'click', ->
     # Clear the log without making a new array (because it's a global var)
