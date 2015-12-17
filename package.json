@@ -1,6 +1,6 @@
 {
   "name": "recordo",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "record browser events for QA to help make tickets/issues",
   "main": "dist/recordo.js",
   "scripts": {
