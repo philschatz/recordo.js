@@ -33,8 +33,9 @@ When you hover over the `[[23]]` (number of messages recorded), the control pane
 Something like the following will then be on your clipboard which you can paste into the ticket tracker of your choice (it also contains the request/response JSON with the server):
 
 ```js
+current_url: 'http://philschatz.com/gh-board/'
+current_window: [800, 600],
 browser: {os: "MacIntel", userAgent: "Mozilla/5.0..."},
-window: [800, 600],
 log: [
   ["USER:CLICK", "div.collapse.navbar-collapse"]
   ["XHR:START", "GET", "/api/tasks/226"]
