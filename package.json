@@ -1,11 +1,11 @@
 {
   "name": "recordo",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "record browser events for QA to help make tickets/issues",
   "main": "dist/recordo.js",
   "scripts": {
     "start": "webpack-dev-server --hot --progress --colors --display-chunks --display-modules --display-origins",
-    "build": "webpack --optimize-minimize --progress --colors"
+    "build": "webpack --progress --colors"
   },
   "author": "Philip Schatz",
   "license": "MIT",

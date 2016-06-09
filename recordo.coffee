@@ -216,10 +216,11 @@ clear = ->
 
 generateClipboard = ->
   info =
+    current_url: window.location.toString()
+    current_window: [window.innerWidth, window.innerHeight]
     browser:
       os: navigator.oscpu or navigator.platform
       userAgent: navigator.userAgent
-    window: [window.innerWidth, window.innerHeight]
     log: THE_LOG
 
   # If the log is long then send the last event of all the types

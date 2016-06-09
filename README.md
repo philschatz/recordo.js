@@ -79,3 +79,4 @@ Since it's part of the webpage it will. You'll be creating bug reports on mobile
 
 - [x] Log _all_ `console` messages
 - [x] Log window resizes
+- [ ] wrap `window.Error` because you shouldn't be constructing errors unless you're throwing them
