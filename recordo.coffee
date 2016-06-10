@@ -15,6 +15,9 @@ omit = require 'lodash/object/omit'
 
 MAX_LOG_SIZE = 50
 
+# The start config changes this setting. It allows for shorter logs since it does not include the JSON response in AJAX requests
+IGNORE_AJAX_RESPONSE = false
+
 OriginalXMLHttpRequest = window.XMLHttpRequest
 originalOnError = window.onerror
 originalOnPopState = window.onpopstate
@@ -105,7 +108,10 @@ class WrappedXMLHttpRequest
     # if it fails, just use the text
     try
       responseText = JSON.parse(responseText)
-    log('XHR:LOAD', @_method, @_url, @status, responseText)
+    if IGNORE_AJAX_RESPONSE
+      log('XHR:LOAD', @_method, @_url, @status)
+    else
+      log('XHR:LOAD', @_method, @_url, @status, responseText)
     @_clientOnLoad?(args...)
 
   _onerror: (args...) ->
@@ -231,21 +237,8 @@ generateClipboard = ->
 
   info
 
-start = (config = {}) ->
-  return if isStarted
 
-  # Load the THE_LOG from localStorage if available (this helps with pages going to a login page and then coming back)
-  if window.localStorage['__RECORDO_LOG']
-    THE_LOG = JSON.parse(window.localStorage['__RECORDO_LOG'])
-  else
-    THE_LOG = []
-
-  window.XMLHttpRequest = WrappedXMLHttpRequest
-  window.onerror = loggedOnError
-  window.onpopstate = loggedOnPopState
-
-  clickListener = listen('*:not(.-recordo)', 'click', logClickHandler)
-
+injectButtons = ->
   controlsDiv = document.querySelector('.-recordo-controls')
   # Create a button if one does not already exist
   unless controlsDiv
@@ -307,6 +300,28 @@ start = (config = {}) ->
 
   stopBtn.addEventListener 'click', -> stop()
 
+
+start = (config = {}) ->
+  IGNORE_AJAX_RESPONSE = !!config.ignoreAjaxResponse
+  return if isStarted
+
+  # Load the THE_LOG from localStorage if available (this helps with pages going to a login page and then coming back)
+  if window.localStorage['__RECORDO_LOG']
+    THE_LOG = JSON.parse(window.localStorage['__RECORDO_LOG'])
+  else
+    THE_LOG = []
+
+  window.XMLHttpRequest = WrappedXMLHttpRequest
+  window.onerror = loggedOnError
+  window.onpopstate = loggedOnPopState
+
+  clickListener = listen('*:not(.-recordo)', 'click', logClickHandler)
+
+  injectButtons()
+
+	window.addEventListener 'unhandledrejection', (event) ->
+		log('UNHANDLED_REJECTION', ['' + event.reason, '' + event.reason.stack])
+
   window.addEventListener 'beforeunload', ->
     return unless isStarted
     log('HISTORY:UNLOAD')
@@ -350,18 +365,20 @@ stop = ->
   isStarted = false
 
 
-initialize = ->
+initialize = (config) ->
   # If the URL has the special `?debug=true` the start automatically
   if /collect=true/.test(window.location.search)
-    start()
+    start(config)
   else if /collect=false/.test(window.location.search)
-    stop()
+    stop(config)
 
-  start() if window.localStorage['__RECORDO_AUTO_START']
+  start(config) if window.localStorage['__RECORDO_AUTO_START']
 
 module.exports = {
   initialize
   start
+  injectButtons
+  log
   stop
   clear
   generateClipboard
