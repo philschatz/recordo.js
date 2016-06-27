@@ -239,6 +239,7 @@ generateClipboard = ->
 
 
 injectButtons = ->
+  return unless isStarted
   controlsDiv = document.querySelector('.-recordo-controls')
   # Create a button if one does not already exist
   unless controlsDiv
@@ -319,8 +320,8 @@ start = (config = {}) ->
 
   injectButtons()
 
-	window.addEventListener 'unhandledrejection', (event) ->
-		log('UNHANDLED_REJECTION', ['' + event.reason, '' + event.reason.stack])
+  window.addEventListener 'unhandledrejection', (event) ->
+  	log('UNHANDLED_REJECTION', ['' + event.reason, '' + event.reason.stack])
 
   window.addEventListener 'beforeunload', ->
     return unless isStarted
